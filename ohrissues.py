@@ -152,7 +152,9 @@ def write_html(final_list: list, writefolder='',writefile='ohr-issues.html',quie
         style_text = \
             "<style>\n"+\
             "table, th, td {\n"+\
-            "border: 1px solid black;\n"+\
+            "border: 1px solid grey;\n"+\
+            "padding: 2px;\n"+\
+            "border-collapse: collapse;\n"+\
             "}\n"+\
             "</style>\n\n"
 
@@ -163,23 +165,11 @@ def write_html(final_list: list, writefolder='',writefile='ohr-issues.html',quie
         "</head>\n" 
         
         file_out.write(style_text+header_text)
-        file_out.write("<body>\n<h2> Issues </h2> \n <p> \n <table id=\"issue_table\" width=\"1000px\">\n")
+        file_out.write("<body>\n")
     with open(Path(writefolder+writefile),'a') as file_out:  
-        file_out.write(f"\t<tr id=\"headers\">\n \t\t<td>issue_id</td>\n \t\t<td>title</td>\n \t\t<td>upvotes</td>\n \t\t<td>downvotes</td>\n \t\t<td>url</td>\n</tr>")             
-        for each_line in final_list:
-            if each_line["label"] == "bug":
-                issue_id = each_line["issue_id"]
-                title = each_line["title"]
-                upvotes = each_line["upvotes"]
-                downvotes = each_line["downvotes"]
-                visit_url = each_line["url"]
-                file_out.write(f"\t<tr id=\"{issue_id}\">\n \t\t<td>{issue_id}</td>\n \t\t<td>{title}</td>\n \t\t<td>{upvotes}</td>\n \t\t<td>{downvotes}</td>\n \t\t<td><a href=\"{visit_url}\" target=\"_blank\">{visit_url}</a></td>\n</tr>")
-                if quiet_mode == False: 
-                    print ("Wrote "+str(issue_id)+" to issues table")
-        file_out.write("</table>\n\n")
-                
+
         file_out.write("\n<h2> Features </h2> \n <table id=\"feature_table\" width=\"1000px\">\n")
-        file_out.write(f"\t<tr id=\"headers\">\n \t\t<td>issue_id</td>\n \t\t<td>title</td>\n \t\t<td>upvotes</td>\n \t\t<td>downvotes</td>\n \t\t<td>url</td>\n</tr>")             
+        file_out.write(f"\t<tr id=\"headers\">\n \t\t<td>title</td>\n \t\t<td>upvotes</td>\n \t\t<td>downvotes</td>\n</tr>")
         if quiet_mode == False: 
             print ("\n")
         for each_line in final_list:
@@ -189,9 +179,24 @@ def write_html(final_list: list, writefolder='',writefile='ohr-issues.html',quie
                 upvotes = each_line["upvotes"]
                 downvotes = each_line["downvotes"]
                 visit_url = each_line["url"]
-                file_out.write(f"\t<tr id=\"{issue_id}\">\n \t\t<td>{issue_id}</td>\n \t\t<td>{title}</td>\n \t\t<td>{upvotes}</td>\n \t\t<td>{downvotes}</td>\n \t\t<td><a href=\"{visit_url}\" target=\"_blank\">{visit_url}</a></td>\n</tr>")
+                file_out.write(f"\t<tr id=\"{issue_id}\">\n \t\t<td><a href=\"{visit_url}\" target=\"_blank\">{issue_id}\t {title}</a></td>\n \t\t<td>{upvotes}</td>\n \t\t<td>{downvotes}</td>\n</tr>")
                 if quiet_mode == False:
                     print ("Wrote "+str(issue_id)+" to features table")
+        file_out.write("</table>\n\n")
+
+        file_out.write("<h2> Issues </h2> \n <p> \n <table id=\"issue_table\" width=\"1000px\" style=\"border-collapse: collapse;\">\n")
+        file_out.write(f"\t<tr id=\"headers\">\n \t\t<td>title</td>\n \t\t<td>upvotes</td>\n \t\t<td>downvotes</td>\n</tr>")             
+        for each_line in final_list:
+            if each_line["label"] == "bug":
+                issue_id = each_line["issue_id"]
+                title = each_line["title"]
+                upvotes = each_line["upvotes"]
+                downvotes = each_line["downvotes"]
+                visit_url = each_line["url"]
+                file_out.write(f"\t<tr id=\"{issue_id}\">\n \t\t<td><a href=\"{visit_url}\" target=\"_blank\">{issue_id}\t {title}</a></td>\n \t\t<td>{upvotes}</td>\n \t\t<td>{downvotes}</td>\n</tr>")
+                if quiet_mode == False: 
+                    print ("Wrote "+str(issue_id)+" to issues table")
+                
         file_out.write("</table>\n</body>")
         if quiet_mode == False:
             print ("Done writing HTML")
