@@ -213,35 +213,34 @@ def show_help():
     print ("\n")
     quit()
 
-fnOK = False
-sortOK = False
 
-if (len(sys.argv) < 3):
+
+quiet_mode = False
+
+args = sys.argv[:]
+if "-q" in args:
+    quiet_mode = True
+    args.remove("-q")
+
+if not len(args) in (2, 3):
     show_help()
     quit()
 
-if (len(sys.argv) < 2):
+
+fn = args[1]
+
+if os.path.exists(os.path.dirname(fn)) == False:
     show_help()
     quit()
 
-if os.path.exists(os.path.dirname(sys.argv[1])) == False:
-    show_help()
-    quit()
+if fn[-4:] == ".csv":
+    outputtype = "csv"
+elif fn[-5:] == ".html":
+    outputtype = "html"
 else:
-    fn = sys.argv[1]
-    if fn[-4:] == ".csv":
-        outputtype = "csv"
-    elif fn[-5:] == ".html":
-        outputtype = "html"
-    else:
-        print ("Output file must be .csv or .html.")
-        show_help()
-        quit()
-    fnOK = True
-
-
-fn = sys.argv[1]
-sortmode = sys.argv[2]
+    print ("Output file must be .csv or .html.")
+    show_help()
+    quit()
 
 acceptable_sortmodes = [
     'highest_score',
@@ -252,14 +251,14 @@ acceptable_sortmodes = [
     'least_downvotes'
 ]
 
-if sortmode in acceptable_sortmodes: 
-    sortOK = True
 
-if fnOK == True and sortOK == True:
-    if "-q" in sys.argv:
-        main(fn,sortmode,outputtype,quiet_mode=True)
-    else:
-        main(fn,sortmode,outputtype,quiet_mode=False)
+if len(args) >= 3:
+    sortmode = args[2]
 else:
+    sortmode = 'highest_score'
+
+if sortmode not in acceptable_sortmodes:
     show_help()
     quit()
+
+main(fn, sortmode, outputtype, quiet_mode)
