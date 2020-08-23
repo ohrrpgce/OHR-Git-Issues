@@ -161,9 +161,15 @@ body {
 <h1> OHRRPGCE Issues </h1> <p>
 </head>
 <body>
+
+<ul style="font-size: 20px;">
+  <li><a href="#feats">Feature Requests</a></li>
+  <li><a href="#bugs">Bugs/Issues</a></li>
+</ul>
+<p>
 """)
 
-        file_out.write("\n<h2> Feature Requests </h2> \n <table id=\"feature_table\" class=\"w3-table w3-bordered w3-striped\">\n")
+        file_out.write("\n<h2 id=\"feats\"> Feature Requests </h2> \n <table id=\"feature_table\" class=\"w3-table w3-bordered w3-striped\">\n")
         file_out.write(f"\t<tr id=\"headers\">\n \t\t<td>Title</td>\n \t\t<td>Upvotes</td>\n \t\t<td>Downvotes</td>\n</tr>")
         if quiet_mode == False: 
             print ("\n")
@@ -177,7 +183,7 @@ body {
                 file_out.write(f"\t<tr id=\"{issue_id}\">\n \t\t<td><a href=\"{visit_url}\" target=\"_blank\">{issue_id}\t {title}</a></td>\n \t\t<td>{upvotes}</td>\n \t\t<td>{downvotes}</td>\n</tr>")
         file_out.write("</table>\n\n")
 
-        file_out.write("<hr><p> \n <h2> Issues </h2> \n <p> \n <table id=\"issue_table\" class=\"w3-table w3-bordered w3-striped\">\n")
+        file_out.write("<hr><p> \n <h2 id=\"bugs\"> Issues </h2> \n <p> \n <table id=\"issue_table\" class=\"w3-table w3-bordered w3-striped\">\n")
         file_out.write(f"\t<tr id=\"headers\">\n \t\t<td>Title</td>\n \t\t<td>Upvotes</td>\n \t\t<td>Downvotes</td>\n</tr>")
         for each_line in final_list:
             if each_line["label"] == "bug":
