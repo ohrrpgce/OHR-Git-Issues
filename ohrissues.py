@@ -63,9 +63,7 @@ def sort_and_prepare_return_final_list(collection,sortmode):
         for each_id in sort_by_leastdownvotes:
             final_list.append(collection[str(each_id)])
     else:
-        # I guess let's default to highest score?
-        for each_id in sort_by_score_highest:
-                final_list.append(collection[str(each_id)])
+        assert(False)
 
     return final_list
 
@@ -93,12 +91,14 @@ def dictify_git(issues_r_data):
             issue_upvotes = each["reactions"]["+1"]
         except:
             issue_upvotes = 0
-        
+
         try:
             issue_downvotes = each["reactions"]["-1"]
         except:
             issue_downvotes = 0
 
+        # Consider anything not tagged "new_feature" a bug, as that includes
+        # issues tagged needs_improvement or not tagged anything.
         label = "bug"
         try:
             for each_label in each["labels"]:
@@ -117,8 +117,8 @@ def dictify_git(issues_r_data):
         issues_data[str(issue_id)]["downvotes"] = issue_downvotes
         issues_data[str(issue_id)]["label"] = label
         issues_data[str(issue_id)]["url"] = 'https://github.com/ohrrpgce/ohrrpgce/issues/'+str(issue_id)
-        
-        issues_data[str(issue_id)]["score"] = issue_upvotes - issue_downvotes
+
+        issues_data[str(issue_id)]["score"] = issue_upvotes - issue_downvotes * 0.6
     return issues_data
 
 def write_csv(final_list: list, writefolder='',writefile='OHR-issues.csv',which_label='bug',quiet_mode=False):
@@ -168,7 +168,7 @@ def write_html(final_list: list, writefolder='',writefile='ohr-issues.html',quie
         file_out.write("<body>\n")
     with open(Path(writefolder+writefile),'a') as file_out:  
 
-        file_out.write("\n<h2> Features </h2> \n <table id=\"feature_table\" width=\"1000px\">\n")
+        file_out.write("\n<h2> Feature Requests </h2> \n <table id=\"feature_table\" width=\"1000px\">\n")
         file_out.write(f"\t<tr id=\"headers\">\n \t\t<td>title</td>\n \t\t<td>upvotes</td>\n \t\t<td>downvotes</td>\n</tr>")
         if quiet_mode == False: 
             print ("\n")
