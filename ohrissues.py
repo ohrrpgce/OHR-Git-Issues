@@ -206,19 +206,16 @@ def main(fn, sortmode, outputtype, quiet_mode=False):
         write_csv(issues_sorted_dict_list,'',fn2,"feature",quiet_mode) # Feature to get 'feature' requests.
 
 def show_help():
-    print ("\n")
     print ("Syntax: python3 "+__file__+" [-q] path_and_filename [sortmode]")
-    print ("Where 'path_and_filename' is the output filename in a writable dir.")
-    print ("  The filename must end in .csv or .html!")
+    print ("'path_and_filename' is the output filename, which must end in .csv or .html!")
     print ("sortmode: any of the following: ")
     print ("  highest_score (default), lowest_score")
     print ("  most_upvotes, least_upvotes")
     print ("  most_downvotes, least_downvotes")
     print ("-q:  'quiet' mode, only displaying errors.")
-    print ("\n")
+    print ("")
     print ("Note: CSV mode has 2 output files. One will be your original filename. The second is your filename with '-features' appended to it for the feature requests.")
-    print ("\n")
-    quit()
+    quit(1)
 
 
 
@@ -231,14 +228,13 @@ if "-q" in args:
 
 if not len(args) in (2, 3):
     show_help()
-    quit()
 
 
 fn = args[1]
 
-if os.path.exists(os.path.dirname(fn)) == False:
-    show_help()
-    quit()
+if not os.access(fn, os.W_OK):
+    print(fn, "is not writable")
+    quit(1)
 
 if fn[-4:] == ".csv":
     outputtype = "csv"
@@ -247,7 +243,6 @@ elif fn[-5:] == ".html":
 else:
     print ("Output file must be .csv or .html.")
     show_help()
-    quit()
 
 acceptable_sortmodes = [
     'highest_score',
@@ -266,6 +261,5 @@ else:
 
 if sortmode not in acceptable_sortmodes:
     show_help()
-    quit()
 
 main(fn, sortmode, outputtype, quiet_mode)
