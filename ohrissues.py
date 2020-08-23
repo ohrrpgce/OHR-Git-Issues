@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''
 OHRRPGCE Git Repo Issue Updoot Tabulator
 Made for TMC and James, with love.
@@ -22,7 +23,7 @@ class MLStripper(HTMLParser):
         super().__init__()
         self.reset()
         self.strict = False
-        self.convert_charrefs= True
+        self.convert_charrefs = True
         self.text = StringIO()
     def handle_data(self, d):
         self.text.write(d)
@@ -34,47 +35,36 @@ def strip_tags(html):
     s.feed(html)
     return s.get_data()
 
-def sort_and_prepare_return_final_list(collection,sortmode):
-    final_list = list()
-    
-    sort_by_mostupvotes = sorted(collection, key=lambda x: (collection[x]['upvotes']), reverse=True)
-    sort_by_leastupvotes = sorted(collection, key=lambda x: (collection[x]['upvotes']),reverse=False)
-    sort_by_mostdownvotes = sorted(collection, key=lambda x: (collection[x]['downvotes']), reverse=True)
-    sort_by_leastdownvotes = sorted(collection, key=lambda x: (collection[x]['downvotes']),reverse=False)
-    sort_by_score_highest =sorted(collection, key=lambda x: (collection[x]['score']), reverse=True)
-    sort_by_score_lowest =sorted(collection, key=lambda x: (collection[x]['score']), reverse=False)
-
+def sort_and_prepare_return_final_list(collection, sortmode):
     if sortmode == "highest_score":
-        for each_id in sort_by_score_highest:
-            final_list.append(collection[str(each_id)])
+        key = lambda issue: issue['score']
     elif sortmode == "lowest_score":
-        for each_id in sort_by_score_lowest:
-            final_list.append(collection[str(each_id)])
+        key = lambda issue: -issue['score']
     elif sortmode == "most_upvotes":
-        for each_id in sort_by_mostupvotes:
-            final_list.append(collection[str(each_id)])
+        key = lambda issue: issue['upvotes']
     elif sortmode == "least_upvotes":
-        for each_id in sort_by_leastupvotes:
-            final_list.append(collection[str(each_id)])
+        key = lambda issue: -issue['upvotes']
     elif sortmode == "most_downvotes":
-        for each_id in sort_by_mostdownvotes:
-            final_list.append(collection[str(each_id)])
+        key = lambda issue: issue['downvotes']
     elif sortmode == "least_downvotes":
-        for each_id in sort_by_leastdownvotes:
-            final_list.append(collection[str(each_id)])
+        key = lambda issue: -issue['downvotes']
     else:
         assert(False)
 
-    return final_list
+    return sorted(collection.values(), key = key, reverse = True)
 
-
-def get_issues(URL=issues_url,PARAMS=issues_params,HEADERS=issues_headers):
-    r = requests.get(url = URL, params = PARAMS, headers=HEADERS) 
+def get_issues(url=issues_url, params=issues_params, headers=issues_headers, quiet_mode=False):
+    params = params.copy()
+    if quiet_mode == False:
+        print ("GET " + url)
+    r = requests.get(url, params, headers=headers)
     issues_r_data = r.json()
-    PARAMS2 = PARAMS
-    del PARAMS["page"]
+    del params["page"]
     while 'next' in r.links.keys():
-        r = requests.get(r.links['next']['url'],headers=HEADERS,params=PARAMS2)     
+        url = r.links['next']['url']
+        if quiet_mode == False:
+            print ("GET " + url)
+        r = requests.get(url, params, headers=headers)
         issues_r_data.extend(r.json())
     return issues_r_data
 
@@ -121,7 +111,7 @@ def dictify_git(issues_r_data):
         issues_data[str(issue_id)]["score"] = issue_upvotes - issue_downvotes * 0.6
     return issues_data
 
-def write_csv(final_list: list, writefolder='',writefile='OHR-issues.csv',which_label='bug',quiet_mode=False):
+def write_csv(final_list: list, writefolder='', writefile='OHR-issues.csv', which_label='bug', quiet_mode=False):
     try:
         with open(writefolder+writefile,'w') as file_out:
             file_out.write("ID,title,up,down,url\n")
@@ -132,7 +122,7 @@ def write_csv(final_list: list, writefolder='',writefile='OHR-issues.csv',which_
         quit()
 
     with open(Path(writefolder+writefile),'a') as file_out:
-        for each_line in final_list:              
+        for each_line in final_list:
             if which_label in each_line["label"]:
                 # Split this into multiple lines to make it more readable.
                 issue_id = each_line["issue_id"]
@@ -142,12 +132,10 @@ def write_csv(final_list: list, writefolder='',writefile='OHR-issues.csv',which_
                 visit_url = each_line["url"]
                 writedata = f'{issue_id},{title},{upvotes},{downvotes},{visit_url}\n'
                 file_out.write(str(writedata))
-                if quiet_mode == False:
-                    print ("Wrote "+str(issue_id)+" to "+writefile)
     if quiet_mode == False:
         print ("Done writing CSV")
 
-def write_html(final_list: list, writefolder='',writefile='ohr-issues.html',quiet_mode=False):
+def write_html(final_list: list, writefolder='', writefile='ohr-issues.html', quiet_mode=False):
     with open(Path(writefolder+writefile),'w') as file_out:
         style_text = \
             "<style>\n"+\
@@ -180,8 +168,6 @@ def write_html(final_list: list, writefolder='',writefile='ohr-issues.html',quie
                 downvotes = each_line["downvotes"]
                 visit_url = each_line["url"]
                 file_out.write(f"\t<tr id=\"{issue_id}\">\n \t\t<td><a href=\"{visit_url}\" target=\"_blank\">{issue_id}\t {title}</a></td>\n \t\t<td>{upvotes}</td>\n \t\t<td>{downvotes}</td>\n</tr>")
-                if quiet_mode == False:
-                    print ("Wrote "+str(issue_id)+" to features table")
         file_out.write("</table>\n\n")
 
         file_out.write("<h2> Issues </h2> \n <p> \n <table id=\"issue_table\" width=\"1000px\" style=\"border-collapse: collapse;\">\n")
@@ -194,15 +180,13 @@ def write_html(final_list: list, writefolder='',writefile='ohr-issues.html',quie
                 downvotes = each_line["downvotes"]
                 visit_url = each_line["url"]
                 file_out.write(f"\t<tr id=\"{issue_id}\">\n \t\t<td><a href=\"{visit_url}\" target=\"_blank\">{issue_id}\t {title}</a></td>\n \t\t<td>{upvotes}</td>\n \t\t<td>{downvotes}</td>\n</tr>")
-                if quiet_mode == False: 
-                    print ("Wrote "+str(issue_id)+" to issues table")
-                
+
         file_out.write("</table>\n</body>")
         if quiet_mode == False:
             print ("Done writing HTML")
 
-def main(fn,sortmode,outputtype,quiet_mode=False):
-    git_data = get_issues()
+def main(fn, sortmode, outputtype, quiet_mode=False):
+    git_data = get_issues(quiet_mode=quiet_mode)
     issues_dict = dictify_git(git_data)
     issues_sorted_dict_list = list()
     issues_sorted_dict_list = sort_and_prepare_return_final_list(issues_dict,sortmode)
@@ -216,16 +200,16 @@ def main(fn,sortmode,outputtype,quiet_mode=False):
 
 def show_help():
     print ("\n")
-    print ("Syntax: python3 "+__file__+" path_and_filename sortmode")
-    print ("Where 'path_and_filename is windows or linux friendly folder structure with write access.")
-    print ("The filename must end in .csv or .html!")
-    print ("Where sortmode is any of the following: ")
-    print ("highest_score, lowest_score")
-    print("most_upvotes,least_upvotes")
-    print("most_downvotes,least_downvotes")
+    print ("Syntax: python3 "+__file__+" [-q] path_and_filename [sortmode]")
+    print ("Where 'path_and_filename' is the output filename in a writable dir.")
+    print ("  The filename must end in .csv or .html!")
+    print ("sortmode: any of the following: ")
+    print ("  highest_score (default), lowest_score")
+    print ("  most_upvotes, least_upvotes")
+    print ("  most_downvotes, least_downvotes")
+    print ("-q:  'quiet' mode, only displaying errors.")
     print ("\n")
     print ("Note: CSV mode has 2 output files. One will be your original filename. The second is your filename with '-features' appended to it for the feature requests.")
-    print ("Note: You may also optionally use the -q argument to enter 'quiet' mode, only displaying errors.")
     print ("\n")
     quit()
 
